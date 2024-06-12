@@ -20,3 +20,12 @@ export const getCustomers = async () => {
     console.error(error);
   }
 };
+
+export const getCustomer = async (id) => {
+  try {
+    const response = await axios.get(`${URL}api/Customers/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
