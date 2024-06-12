@@ -12,4 +12,11 @@ export const createCustomer = async (data) => {
   }
 };
 
-
+export const getCustomers = async () => {
+  try {
+    const response = await axios.get(`${URL}api/Customers`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
