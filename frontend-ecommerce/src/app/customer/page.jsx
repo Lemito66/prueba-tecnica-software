@@ -1,42 +1,59 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { createCustomer } from "@/services/ecommerce.api";
-import { set, useForm } from "react-hook-form";
-function NewPage() {
+import { createCustomer, deleteCustomer, getCustomer, updateCustomer } from "@/services/ecommerce.api";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
+function NewCustomer({ params }) {
   const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm();
-  const onSubmit = handleSubmit(async (data) => {
 
+  useEffect(() => {
+    if (params.id) {
+      const loadCustomer = async () => {
+        try {
+          const response = await getCustomer(params.id);
+          setValue("firstName", response.firstName);
+          setValue("lastName", response.lastName);
+        } catch (error) {
+          console.error("Error loading customer:", error);
+        }
+      };
+      loadCustomer();
+    }
+  }, [params.id, setValue]);
+
+  const onSubmit = handleSubmit(async (data) => {
     const dataModified = {
-      id: 0,
+      id: params.id ? params.id : 0,
       firstName: data.firstName,
       lastName: data.lastName,
-    }
-    console.log(dataModified);
+    };
 
-    const response = await createCustomer(dataModified);
-    //console.log(response);
-
-    if (response) {
+    try {
+      if (params.id) {
+        await updateCustomer(dataModified);
+      } else {
+        await createCustomer(dataModified);
+      }
       router.push("/");
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-
-
-    
-    
   });
+
   return (
     <div className="h-screen flex justify-center items-center">
       <form
         className="bg-slate-800 p-10 lg:w-1/4 md:w-full"
         onSubmit={onSubmit}
       >
-        <label htmlFor="title" className="font-bold text-sm">
+        <label htmlFor="firstName" className="font-bold text-sm">
           Nombre
         </label>
         <input
@@ -54,8 +71,10 @@ function NewPage() {
             },
           })}
         />
-        {errors.firstName && <p className="text-red-500">{errors.firstName.message}</p>}
-        <label htmlFor="title" className="font-bold text-sm">
+        {errors.firstName && (
+          <p className="text-red-500">{errors.firstName.message}</p>
+        )}
+        <label htmlFor="lastName" className="font-bold text-sm">
           Apellido
         </label>
         <input
@@ -80,11 +99,27 @@ function NewPage() {
           type="submit"
           className="bg-green-500 hover:bg-green-700 text-white p-2 font-bold py-2 px-4 rounded"
         >
-          Guardar
+          {params.id ? "Actualizar" : "Crear"}
         </button>
+
+        {params.id && (
+            <button
+              type="button"
+              className="bg-red-500 hover:bg-red-700 text-white p-2 font-bold py-2 px-4 rounded ml-4"
+              onClick={async () => {
+                
+                const response = await deleteCustomer(params.id);
+
+                router.push("/");
+                router.refresh();
+              }}
+            >
+              Eliminar
+            </button>
+          )}
       </form>
     </div>
   );
 }
 
-export default NewPage;
+export default NewCustomer;
