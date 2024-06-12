@@ -46,6 +46,15 @@ export const updateCustomer = async (data) => {
   }
 };
 
+export const deleteCustomer = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`api/Customers/${id}`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+};
+
 const handleAxiosError = (error) => {
   if (error.response) {
     // La solicitud fue hecha y el servidor respondió con un código de estado
